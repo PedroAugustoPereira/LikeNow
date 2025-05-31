@@ -14,7 +14,7 @@ import { log } from 'console';
 export class AuthService {
   constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
-  async login(email: string, password: string): Promise<AuthEntity> {
+  async login(email: string, password: string){
     console.log('Attempting login for email:', email);
     
     const user = await this.prisma.user.findUnique({ where: { email: email } });
@@ -38,6 +38,7 @@ export class AuthService {
     console.log('Login successful for user:', email);
     return {
       accessToken: this.jwtService.sign({ userId: user.id }),
+      user_id: user.id,
     };
   }
 }
