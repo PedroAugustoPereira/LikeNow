@@ -37,7 +37,7 @@ export class FeedbackService {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const prompt = process.env.PROMPT;
     const responseOpenai = await openai.chat.completions.create({
-      model: 'gpt-4', // ou 'gpt-3.5-turbo'
+      model: 'gpt-4', 
       messages: [
         {
           role: 'user',

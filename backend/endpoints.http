@@ -11,3 +11,15 @@ Content-Type: application/json
 
 ####
 GET http://localhost:3000/user
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWJjODV1MTUwMDAycTRqcnBqeWVqeG45IiwiaWF0IjoxNzQ4Njk1NjE3LCJleHAiOjE3NDg3ODIwMTd9.OGJRdTM-hwYqwYdIN-8FR7KzO011Fy9yzN4iqXdfrSg
+
+
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "user123"  
+}
