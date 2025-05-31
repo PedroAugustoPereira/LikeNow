@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaArrowLeft, FaHome } from 'react-icons/fa';
+import authService from '@/services/auth_service';
 
 export default function SendedPage() {
   return (

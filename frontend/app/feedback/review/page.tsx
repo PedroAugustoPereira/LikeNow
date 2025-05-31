@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { transcreverAudio } from '../../utils/transcribe';
 import { useRouter } from 'next/navigation';
+import authService from '@/services/auth_service';
 
 export default function ReviewPage() {
   const [needsResponse, setNeedsResponse] = useState(false);
@@ -26,6 +27,10 @@ export default function ReviewPage() {
   // Referências para gravação de áudio
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  
+  useEffect(() => {
+    authService.checkAuthentication();
+  }, []);
 
   // Efeito para animação de digitação
   useEffect(() => {

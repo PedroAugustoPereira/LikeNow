@@ -5,6 +5,7 @@ import { FaChevronDown, FaChevronUp, FaUser, FaUserSecret } from 'react-icons/fa
 import { FiClock, FiCalendar } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
+import authService from '@/services/auth_service';
 
 // Tipo para os feedbacks
 type Feedback = {
@@ -20,7 +21,10 @@ export default function FeedbackHistoryPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
   const [isLeader, setIsLeader] = useState(true); // Simulação - substitua pela lógica real
-
+  
+  useEffect(() => {
+    authService.checkAuthentication();
+  }, []);
   // Simulação de carregamento dos feedbacks
   useEffect(() => {
     // Substitua isso pela chamada real à API

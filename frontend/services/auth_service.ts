@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { useRouter } from 'next/router';
 
 // Tipos baseados na estrutura do seu backend
 export interface LoginData {
@@ -54,7 +55,9 @@ class AuthService {
    */
   logout(): void {
     localStorage.removeItem('authToken');
-    // Adicione aqui qualquer outra lógica de limpeza
+    localStorage.removeItem('user_id');
+    // Redireciona para a página de login
+    window.location.href = '/start/login';
   }
 
   /**
@@ -72,6 +75,36 @@ class AuthService {
    */
   getToken(): string | null {
     return localStorage.getItem('authToken');
+  }
+
+  /**
+   * Verifica a autenticação e redireciona para login se não estiver autenticado
+   */
+  checkAuthentication(): void {
+    if (!this.isAuthenticated()) {
+      // Usamos window.location.href em vez do router para garantir que a página recarregue
+      window.location.href = '/start/login';
+    }
+  }
+
+  /**
+   * Verifica a autenticação em uma rota protegida (para uso em getServerSideProps)
+   * @param context - Contexto da requisição
+   * @returns Objeto com props ou redirecionamento
+   */
+  async checkAuthServerSide(context: any): Promise<{ props?: any, redirect?: { destination: string, permanent: boolean } }> {
+    const token = context.req?.cookies?.authToken || null;
+    
+    if (!token) {
+      return {
+        redirect: {
+          destination: '/start/login',
+          permanent: false,
+        },
+      };
+    }
+
+    return { props: {} };
   }
 }
 

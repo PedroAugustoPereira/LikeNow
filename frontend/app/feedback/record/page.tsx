@@ -8,12 +8,16 @@ import Link from 'next/link';
 import WaveSurfer from "wavesurfer.js";
 import { transcreverAudio } from '../../utils/transcribe';
 import { useRouter } from 'next/navigation'; 
+import authService from '@/services/auth_service';
 
 export default function RecordPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const router = useRouter(); // Inicialize o router
   const [isLoading, setIsLoading] = useState(false); // Estado para controlar o loading
 
+  useEffect(() => {
+    authService.checkAuthentication();
+  }, []);
 
   // Carrega o valor salvo ao iniciar
   useEffect(() => {
