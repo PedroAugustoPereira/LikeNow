@@ -30,7 +30,7 @@ export class TeamController {
     return this.teamService.findOne(id);
   }
 
-  @Get('/leader:id')
+  @Get('/leader/:id')
   findLeader(@Param('id') id: string) {
     return this.teamService.findLeader(id);
   }
