@@ -25,7 +25,7 @@ export class EnterpriseService {
       data: updateEnterpriseDto,
     });
   }
-  async remove(id: number) {
+  async remove(id: string) {
     return await this.prismaService.enterprise.delete({ where: { id: id } });
   }
 }
