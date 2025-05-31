@@ -38,13 +38,13 @@ export default function LoginPage() {
     
     try {
       // 1. Tentativa de login
-      await authService.login(data.email, data.password);
+      let response = await authService.login(data.email, data.password);
       
       // 3. Redirecionar com base no tipo de usuário (exemplo)
       if (data.password != '1234') {
         router.push('/');
       } else {
-        router.push('/onboarding');
+        router.push('/onboarding?userId=' + response.user_id);
       }
       
       // 4. Se "Lembrar de mim" estiver marcado, armazenar email (opcional)
