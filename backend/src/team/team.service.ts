@@ -36,6 +36,14 @@ export class TeamService {
     });
   }
 
+  async findLeader(id: string) {
+    const team = await this.findOne(id);
+    if (!team) throw new Error('Team not found');
+    return await this.prisma.user.findUnique({
+      where: { id: team.leaderId },
+    });
+  }
+
   async update(id: string, updateTeamDto: UpdateTeamDto) {
     return await this.prisma.team.update({
       where: { id },
