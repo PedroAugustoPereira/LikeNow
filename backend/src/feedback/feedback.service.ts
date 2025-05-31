@@ -12,7 +12,8 @@ export class FeedbackService {
   constructor(private readonly prisma: PrismaService) {}
 
   async sendFeedback(createFeedbackDto: CreateFeedbackDto) {
-    if (createFeedbackDto.senderUserId !== null) {
+    console.log('createFeedbackDto', createFeedbackDto);
+    if (createFeedbackDto.senderUserId !== null && createFeedbackDto.senderUserId !== "") {
       const user = await this.prisma.user.findUnique({
         where: { id: createFeedbackDto.senderUserId },
       });
@@ -49,6 +50,10 @@ export class FeedbackService {
       ],
       temperature: 0.7,
     });
+
+    if(!responseOpenai){
+      console.log("erro na openai");
+    } 
 
     const feedback = await this.prisma.feedback.create({
       data: {
