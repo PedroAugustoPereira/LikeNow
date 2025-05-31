@@ -13,6 +13,7 @@ import feedbackService, { SendFeedbackData } from '@/services/feedback_service';
 import userService from '@/services/user_service';
 import teamService from '@/services/team_service';
 import { enviarParaOpenAI } from '@/app/utils/makeSuma';
+import LoadingAnimation from '@/app/components/loading_animation';
 
 export default function RecordPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -204,20 +205,7 @@ export default function RecordPage() {
     <div className={`min-h-screen flex flex-col relative ${isAnonymous ? 'dark:bg-gray-900 dark:text-white' : 'bg-gray-50 text-gray-500'}`}>
       {/* Overlay de Loading */}
       {isLoading && (
-        <div
-        className={`min-h-screen font-sans flex flex-col items-center justify-center transition-colors duration-300 ${
-          isAnonymous ? "dark:bg-gray-900 dark:text-white" : "bg-gray-50 text-gray-700"
-        }`}
-      >
-        <img
-          src="/images/lino_think.png"
-          alt="Logo Lino"
-          className="h-40 mb-8"
-        />
-        <p className="text-xl text-center mb-8">
-          Pensando na melhor resposta para você...
-        </p>
-      </div>
+        <LoadingAnimation isSaving={false} isAnonymous={isAnonymous} />
       )}
       {/* Cabeçalho */}
       <header className="flex justify-between items-center p-4">

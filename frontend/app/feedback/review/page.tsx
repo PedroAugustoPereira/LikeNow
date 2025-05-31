@@ -11,6 +11,7 @@ import { enviarParaOpenAI } from '@/app/utils/makeSuma';
 import user_service from '@/services/user_service';
 import team_service from '@/services/team_service';
 import feedback_service from '@/services/feedback_service';
+import LoadingAnimation from '@/app/components/loading_animation';
 
 export default function ReviewPage() {
   const [needsResponse, setNeedsResponse] = useState(false);
@@ -23,6 +24,7 @@ export default function ReviewPage() {
   const [reviewConcluido, setReviewConcluido] = useState(false);
   const [reloadCount, setReloadCount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false); // Novo estado para controlar o loading
+  const [isSaving, setIsSaving] = useState(false); // Novo estado para controlar o loading
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null); // Armazena o blob do áudio
   const [isAnonymous, setIsAnonymous] = useState(false); // Estado para controle de anonimato
   const maxReloads = 5;
@@ -170,6 +172,7 @@ export default function ReviewPage() {
 
   const handleSubmit = async () => {
     setIsProcessing(true);
+    setIsSaving(true);
     
     try {
       const userId = localStorage.getItem('user_id');
@@ -204,24 +207,12 @@ export default function ReviewPage() {
       alert('Erro ao enviar feedback. Por favor, tente novamente.');
     } finally {
       setIsProcessing(false);
+      setIsSaving(false);
     }
   };
    // Se estiver processando, mostra o overlay de loading
    if (isProcessing) {
-    return (
-      <div className={`min-h-screen font-sans flex flex-col items-center justify-center transition-colors duration-300 ${
-        isAnonymous ? "dark:bg-gray-900 dark:text-white" : "bg-gray-50 text-gray-700"
-      }`}>
-        <img
-          src="/images/lino_think.png"
-          alt="Logo Lino"
-          className="h-40 mb-8"
-        />
-        <p className="text-xl text-center mb-8">
-          Pensando na melhor resposta para você...
-        </p>
-      </div>
-    );
+    return <LoadingAnimation isSaving={isSaving} isAnonymous={isAnonymous} />;
   }
 
  return (
