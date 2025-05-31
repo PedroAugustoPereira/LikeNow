@@ -18,6 +18,7 @@ CREATE TABLE "Team" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "leaderId" TEXT NOT NULL,
     "enterpriseId" TEXT NOT NULL,
+    "leaderSlackId" TEXT,
 
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
 );
@@ -34,7 +35,8 @@ CREATE TABLE "Enterprise" (
 -- CreateTable
 CREATE TABLE "Feedback" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "senderUserId" TEXT NOT NULL,
+    "receiverUserId" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "message" TEXT NOT NULL,
 
@@ -59,7 +61,7 @@ CREATE INDEX "_TeamUsers_B_index" ON "_TeamUsers"("B");
 ALTER TABLE "Team" ADD CONSTRAINT "Team_enterpriseId_fkey" FOREIGN KEY ("enterpriseId") REFERENCES "Enterprise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_senderUserId_fkey" FOREIGN KEY ("senderUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_TeamUsers" ADD CONSTRAINT "_TeamUsers_A_fkey" FOREIGN KEY ("A") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;

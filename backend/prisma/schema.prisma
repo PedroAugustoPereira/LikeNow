@@ -41,14 +41,12 @@ model Enterprise {
   adminUserId String
   teams       Team[]  @relation("EnterpriseTeams")
 }
+
 model Feedback {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  senderUserId    String
+  receiverUserId    String
+  receiverUser      User     @relation(fields: [receiverUserId], references: [id])
   date      DateTime @default(now())
   message   String
 }
-
-
-
-

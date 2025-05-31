@@ -6,11 +6,6 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
-  @Post()
-  create(@Body() createFeedbackDto: CreateFeedbackDto) {
-    return this.feedbackService.create(createFeedbackDto);
-  }
-  
   @Post('/sendFeedback')
   sendFeedback(@Body() createFeedbackDto: CreateFeedbackDto) {
     return this.feedbackService.sendFeedback(createFeedbackDto);

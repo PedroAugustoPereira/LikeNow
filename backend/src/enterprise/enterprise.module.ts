@@ -8,5 +8,5 @@ import { PrismaModule } from 'src/prisma/prisma.module';
   providers: [EnterpriseService],
   imports: [PrismaModule],
   exports: [EnterpriseService],
-})  
+})
 export class EnterpriseModule {}

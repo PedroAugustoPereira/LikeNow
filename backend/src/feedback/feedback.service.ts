@@ -2,62 +2,63 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 import { Injectable } from '@nestjs/common';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
-import OpenAI from "openai";
+import OpenAI from 'openai';
 import { sendDM } from 'src/third_party/slack';
 
 @Injectable()
 export class FeedbackService {
-  constructor(private readonly prisma: PrismaService) { }
-
-  async create(createFeedbackDto: CreateFeedbackDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: createFeedbackDto.userId },
-    });
-    if (!user) throw new Error('User not found');
-
-    return await this.prisma.feedback.create({ data: createFeedbackDto });
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async sendFeedback(createFeedbackDto: CreateFeedbackDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: createFeedbackDto.userId },
-    });
-    if (!user) throw new Error('User not found');
+    if (createFeedbackDto.senderUserId !== null) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: createFeedbackDto.senderUserId },
+      });
+
+      if (!user) {
+        return 'Sender user not found';
+      }
+    }
 
     const team = await this.prisma.team.findFirst({
       where: {
         users: {
-          some: { id: createFeedbackDto.userId },
+          some: { id: createFeedbackDto.receiverUserId },
         },
       },
     });
-    if (!team) throw new Error('Team not found for user');
+    if (!team) return 'Team not found for user';
 
-    const leader = await this.prisma.user.findUnique({
-      where: { id: team.leaderId },
+    const receiverUser = await this.prisma.user.findUnique({
+      where: { id: createFeedbackDto.receiverUserId },
     });
-    if (!leader) throw new Error('Leader not found');
+    if (!receiverUser) return 'Receiver user not found';
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const prompt = process.env.PROMPT;
     const responseOpenai = await openai.chat.completions.create({
       model: 'gpt-4', // ou 'gpt-3.5-turbo'
       messages: [
-        { role: 'user', content: prompt + `Transcrição fornecida: ${createFeedbackDto.message}` }
+        {
+          role: 'user',
+          content:
+            prompt + `Transcrição fornecida: ${createFeedbackDto.message}`,
+        },
       ],
       temperature: 0.7,
     });
-  
+
     const feedback = await this.prisma.feedback.create({
       data: {
-        userId: createFeedbackDto.userId,
+        receiverUserId: createFeedbackDto.receiverUserId,
+        senderUserId: createFeedbackDto.senderUserId || 'anonymous',
         message: responseOpenai.choices[0].message.content,
       },
     });
 
-    sendDM("U08UMRX2SG6", feedback.message);
+    sendDM('U08UMRX2SG6', feedback.message);
 
-    return feedback
+    return feedback;
   }
 
   async findAll() {

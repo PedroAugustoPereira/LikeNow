@@ -49,10 +49,12 @@ export class TeamService {
 
   async findLeader(id: string) {
     const team = await this.findOne(id);
-    if (!team) throw new Error('Team not found');
-    return await this.prisma.user.findUnique({
+    if (!team) return 'Team not found';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userInfo } = await this.prisma.user.findUnique({
       where: { id: team.leaderId },
     });
+    return userInfo;
   }
 
   async update(id: string, updateTeamDto: UpdateTeamDto) {

@@ -10,15 +10,17 @@ export class EnterpriseService {
   async create(createEnterpriseDto: CreateEnterpriseDto) {
     return await this.prismaService.enterprise.create({
       data: createEnterpriseDto,
-  });
-}
+    });
+  }
 
   async findAll() {
     return await this.prismaService.enterprise.findMany();
   }
 
   async findOne(id: string) {
-    return await this.prismaService.enterprise.findUnique({ where: { id: id } });
+    return await this.prismaService.enterprise.findUnique({
+      where: { id: id },
+    });
   }
 
   async update(id: string, updateEnterpriseDto: UpdateEnterpriseDto) {
@@ -28,6 +30,11 @@ export class EnterpriseService {
     });
   }
   async remove(id: string) {
-    return await this.prismaService.enterprise.delete({ where: { id: id } });
+    try {
+      return await this.prismaService.enterprise.delete({ where: { id: id } });
+    } catch (error) {
+      console.log('Error removing enterprise:', error);
+      return null;
+    }
   }
 }

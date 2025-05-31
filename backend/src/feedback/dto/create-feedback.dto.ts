@@ -1,4 +1,6 @@
 export class CreateFeedbackDto {
-  userId: string;
+  senderUserId?: string;
+  receiverUserId: string;
   message: string;
+  userId: any;
 }

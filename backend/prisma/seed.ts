@@ -46,7 +46,8 @@ async function main() {
   // 5. Criar Feedback
   await prisma.feedback.create({
     data: {
-      userId: user.id,
+      senderUserId: user.id,
+      receiverUserId: user.id,
       message: 'Este é um feedback de exemplo.',
     },
   });

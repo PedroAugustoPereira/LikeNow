@@ -73,6 +73,17 @@
   - Líder inválido: `Leader not found`
   - Empresa inválida:: `Enterprise not found`
 
+- (GET) Exibir Líder do time: [/leader/:id]
+  - `inserir id do time no url da requisição no lugar de <:id>`
+  - Retorno da requisição
+    {
+      "id": string,
+      "email": string,
+      "name": string,
+      "createdAt": datetime,
+      "updatedAt": datetime"
+    }
+
 - (POST) Criar novo time: [/]
   - Corpo da Requisição
     {
@@ -109,5 +120,51 @@
       "enterpriseId": string (FK)"
     }
 
-- (DELETE) Obter um único time: [/:id]
+- (DELETE) Remover um único time: [/:id]
   - `inserir id do time no url da requisição no lugar de <:id>`
+
+### Empresas [/enterprise]
+
+- (GET) Listar todas as empresas:  [/]
+  - Retorno da requisição: JSON com todas as empresas
+  - 
+- (GET) Obter uma única empresa: [/:id]
+  - `inserir id da empresa no url da requisição no lugar de <:id>`
+  - Retorno da requisição
+    {
+      "id": string,
+      "name": string,
+      "adminUserId": string
+    }
+  - Empresa não existe: `mensagem em branco`
+
+- (POST) Criar nova empresa: [/]
+  - Corpo da Requisição
+    {
+      "name": string,
+      "adminUserId": string
+    }
+  - Retorno da requisição
+    {
+      "id": string,
+      "name": string,
+      "adminUserId": string
+    }
+    
+
+- (PATCH) Atualizar empresa: [/:id]
+  - `Inserir id da empresa no lugar de <:id>`
+  - Corpo da Requisição
+    {
+      "name": string (opcional),
+      "adminUserId": string (opcional)
+    }
+  - Retorno da Requisição
+    {
+      "id": strig,
+      "name": string,
+      "adminUserId": string
+    }
+
+- (DELETE) Apagar uma única empresa: [/:id]
+  - `inserir id da empresa no url da requisição no lugar de <:id>`
