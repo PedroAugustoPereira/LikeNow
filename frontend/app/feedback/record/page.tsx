@@ -7,10 +7,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import WaveSurfer from "wavesurfer.js";
 import { transcreverAudio } from '../../utils/transcribe';
-
+import { useRouter } from 'next/navigation'; 
 
 export default function RecordPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const router = useRouter(); // Inicialize o router
+  const [isLoading, setIsLoading] = useState(false); // Estado para controlar o loading
+
 
   // Carrega o valor salvo ao iniciar
   useEffect(() => {
@@ -118,51 +121,78 @@ export default function RecordPage() {
   };
 
   const handleSubmit = async () => {
-    if (audioUrl && !showTextInput) {
-      // Se for áudio, faz a transcrição antes de enviar
-      const response = await fetch(audioUrl);
-      const audioBlob = await response.blob();
-      const textoTranscrito = await transcreverAudio(audioBlob);
+    setIsLoading(true); // Ativa o loading
+    
+    try {
+      if (audioUrl && !showTextInput) {
+        const response = await fetch(audioUrl);
+        const audioBlob = await response.blob();
+        const textoTranscrito = await transcreverAudio(audioBlob);
 
-      // Salva feedback no localStorage
-      localStorage.setItem(
-        "ultimoFeedback",
-        JSON.stringify({
+        localStorage.setItem(
+          "ultimoFeedback",
+          JSON.stringify({
+            isAnonymous,
+            audioUrl,
+            textoTranscrito,
+            tipo: "audio",
+            data: new Date().toISOString(),
+          })
+        );
+
+        console.log('Feedback enviado:', {
           isAnonymous,
           audioUrl,
           textoTranscrito,
-          tipo: "audio",
-          data: new Date().toISOString(),
-        })
-      );
+        });
+      } else {
+        localStorage.setItem(
+          "ultimoFeedback",
+          JSON.stringify({
+            isAnonymous,
+            text: feedbackText,
+            tipo: "texto",
+            data: new Date().toISOString(),
+          })
+        );
 
-      console.log('Feedback enviado:', {
-        isAnonymous,
-        audioUrl,
-        textoTranscrito,
-      });
-      // Aqui você pode usar o texto transcrito como quiser (exibir, enviar para backend, etc)
-    } else {
-      // Se for texto digitado
-      localStorage.setItem(
-        "ultimoFeedback",
-        JSON.stringify({
+        console.log('Feedback enviado:', {
           isAnonymous,
-          text: feedbackText,
-          tipo: "texto",
-          data: new Date().toISOString(),
-        })
-      );
+          text: feedbackText
+        });
+      }
 
-      console.log('Feedback enviado:', {
-        isAnonymous,
-        text: feedbackText
-      });
+      // Simula um tempo de processamento (remova em produção)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Redireciona para a tela de review
+      router.push('/feedback/review');
+      
+    } catch (error) {
+      console.error('Erro ao enviar feedback:', error);
+      setIsLoading(false); // Desativa o loading em caso de erro
     }
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${isAnonymous ? 'dark:bg-gray-900 dark:text-white' : 'bg-gray-50 text-gray-500'}`}>
+    <div className={`min-h-screen flex flex-col relative ${isAnonymous ? 'dark:bg-gray-900 dark:text-white' : 'bg-gray-50 text-gray-500'}`}>
+      {/* Overlay de Loading */}
+      {isLoading && (
+        <div
+        className={`min-h-screen font-sans flex flex-col items-center justify-center transition-colors duration-300 ${
+          isAnonymous ? "dark:bg-gray-900 dark:text-white" : "bg-gray-50 text-gray-700"
+        }`}
+      >
+        <img
+          src="/images/lino_think.png"
+          alt="Logo Lino"
+          className="h-40 mb-8"
+        />
+        <p className="text-xl text-center mb-8">
+          Pensando na melhor resposta para você...
+        </p>
+      </div>
+      )}
       {/* Cabeçalho */}
       <header className="flex justify-between items-center p-4">
         {/* Toggle Anônimo */}
@@ -196,10 +226,10 @@ export default function RecordPage() {
         {/* Ícone do Aplicativo (central) */}
         <div className="mb-12">
           <Image
-            src={isAnonymous ? "/images/lino_anom_icon.png" : "/images/lino_icon.png"}
+            src={isAnonymous ? "/images/lino_anom"+ (isRecording ? "_listen" : "") +".png" : "/images/lino"+ (isRecording ? "_listen" : "") +".png"}
             alt={isAnonymous ? "Logo Anônimo" : "Logo Lino"}
-            width={120}
-            height={120}
+            width={150}
+            height={150}
             className="mx-auto transition-all duration-300"
             priority
           />

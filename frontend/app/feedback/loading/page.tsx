@@ -17,7 +17,7 @@ export default function Pensando() {
       }`}
     >
       <img
-        src="/images/lino_icon.png"
+        src="/images/lino_think.png"
         alt="Logo Lino"
         className="h-40 mb-8"
       />

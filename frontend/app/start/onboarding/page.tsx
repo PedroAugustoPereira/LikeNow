@@ -84,7 +84,7 @@ export default function OnboardingPage() {
       <div className="w-full bg-white p-6 space-y-8 min-h-screen flex flex-col justify-center sm:min-h-0 sm:max-w-md sm:p-8 sm:shadow-xl sm:rounded-lg sm:flex-none">
         
       <img 
-            src="/images/lino_icon.png"
+            src="/images/lino_think.png"
             alt="Logo Lino"
             className="h-40 place-self-center"/>
             <div className="text-center">

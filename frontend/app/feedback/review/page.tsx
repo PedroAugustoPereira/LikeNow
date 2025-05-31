@@ -5,6 +5,7 @@ import { FaMicrophone, FaKeyboard, FaArrowLeft, FaPaperPlane, FaArrowUp } from '
 import Image from 'next/image';
 import Link from 'next/link';
 import { transcreverAudio } from '../../utils/transcribe';
+import { useRouter } from 'next/navigation'; 
 
 export default function ReviewPage() {
   const [needsResponse, setNeedsResponse] = useState(false);
@@ -16,6 +17,8 @@ export default function ReviewPage() {
   const [reviewConcluido, setReviewConcluido] = useState(false); // NOVO STATE
   const [reloadCount, setReloadCount] = useState(0); // Novo state para contar reloads
   const maxReloads = 5;
+  const router = useRouter(); // Inicialize o router
+
 
   // Referências para gravação de áudio
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -87,15 +90,6 @@ export default function ReviewPage() {
     setIsRecording(false);
   };
 
-  const handleSubmit = () => {
-    console.log('Feedback enviado:', {
-      reviewText,
-      responseText: feedbackText,
-      needsResponse
-    });
-    // Lógica para enviar para o backend
-  };
-
   // Atualizado: agora seta reviewConcluido ao dar reload
   const handleReload = () => {
     if (feedbackText.trim() && reloadCount < maxReloads) {
@@ -107,10 +101,22 @@ export default function ReviewPage() {
       if (reloadCount + 1 >= maxReloads) {
         setReviewConcluido(true); // Marca como concluído após 5 reloads
         setNeedsResponse(false);  // Esconde o toggle
+      } else {
+        setNeedsResponse(false); // Fecha o toggle, mas permite abrir de novo
       }
     }
   }
 
+  const handleSubmit = () => {
+    console.log('Feedback enviado:', {
+      reviewText,
+      responseText: feedbackText,
+      needsResponse
+    });
+    // Lógica para enviar para o backend
+    setNeedsResponse(false); // Fecha o toggle, mas permite abrir de novo
+    router.push('/feedback/sended');
+  };
 
   return (
     <div className="min-h-screen flex flex-col  bg-gray-50">
@@ -118,7 +124,7 @@ export default function ReviewPage() {
       <header className="flex justify-center p-4">
         <div className="w-24 h-24 relative">
           <Image
-            src="/images/lino_icon.png"
+            src="/images/lino_talk.png"
             alt="Logo Lino"
             fill
             className="object-contain"
@@ -138,24 +144,26 @@ export default function ReviewPage() {
         </div>
 
         {/* Opção "Entendi algo errado?" como toggle */}
-        {!reviewConcluido && <div className="flex items-center">
-          <label htmlFor="needs-response" className="flex items-center cursor-pointer">
-            <div className="relative">
-              <input 
-                type="checkbox" 
-                id="needs-response" 
-                className="sr-only" 
-                checked={needsResponse}
-                onChange={() => setNeedsResponse(!needsResponse)}
-              />
-              <div className={`block w-14 h-8 rounded-full ${needsResponse ? 'bg-orange-600' : 'bg-gray-300'}`}></div>
-              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${needsResponse ? 'transform translate-x-6' : ''}`}></div>
-            </div>
-            <span className="ml-3 text-md font-medium text-gray-700">
-              Entendi algo errado?
-            </span>
-          </label>
-        </div>}
+        {!reviewConcluido && (
+          <div className="flex items-center">
+            <label htmlFor="needs-response" className="flex items-center cursor-pointer">
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  id="needs-response" 
+                  className="sr-only" 
+                  checked={needsResponse}
+                  onChange={() => setNeedsResponse(v => !v)}
+                />
+                <div className={`block w-14 h-8 rounded-full ${needsResponse ? 'bg-orange-600' : 'bg-gray-300'}`}></div>
+                <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${needsResponse ? 'transform translate-x-6' : ''}`}></div>
+              </div>
+              <span className="ml-3 text-md font-medium text-gray-700">
+                Entendi algo errado?
+              </span>
+            </label>
+          </div>
+        )}
       </main>
 
       {/* Barra de ações fixa na parte inferior */}

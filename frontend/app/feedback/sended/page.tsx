@@ -10,7 +10,7 @@ export default function SendedPage() {
       {/* Logo centralizado */}
       <div className="w-40 h-40 relative mb-8">
         <Image
-          src="/images/lino_icon.png"
+          src="/images/lino_ok.png"
           alt="Logo Lino"
           fill
           className="object-contain"
