@@ -4,8 +4,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaArrowLeft, FaHome } from 'react-icons/fa';
 import authService from '@/services/auth_service';
+import { useEffect } from 'react';
 
 export default function SendedPage() {
+    
+    useEffect(() => {
+    authService.checkAuthentication();
+  }, []);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 animate-fade-in">
       {/* Logo centralizado */}

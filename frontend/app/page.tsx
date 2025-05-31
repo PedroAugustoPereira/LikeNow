@@ -2,35 +2,110 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaMicrophone, FaHistory } from 'react-icons/fa';
+import { FaMicrophone, FaHistory, FaDoorOpen } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
+import userService from '../services/user_service';
+import teamService from '../services/team_service';
+import authService from '../services/auth_service';
+import { Button } from 'flowbite-react';
 
 export default function HomePage() {
-  // Mock: forçar como se o usuário fosse líder
-  const [isLeader, setIsLeader] = useState(true);
-  const [summary, setSummary] = useState('Seu time recebeu 5 feedbacks esta semana: 3 positivos e 2 sugestões.');
+  const [isLeader, setIsLeader] = useState(false);
+  const [summary, setSummary] = useState('Carregando...');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  /*
-  // Fluxo real (descomentar quando tiver API)
   useEffect(() => {
     async function fetchUserData() {
-      const res = await fetch('/api/user');
-      const data = await res.json();
-      setIsLeader(data.isLeader);
+      try {
+        // Verifica se o usuário está autenticado
+        authService.checkAuthentication();
+        
+        // Obtém o user_id do localStorage
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+          throw new Error('ID do usuário não encontrado');
+        }
 
-      if (data.isLeader) {
-        const summaryRes = await fetch('/api/feedback/summary');
-        const summaryData = await summaryRes.json();
-        setSummary(summaryData.text);
+        // Busca os dados do usuário
+        const user = await userService.getUserById(userId);
+        
+        // Se o usuário não tem time, não é líder
+        if (!user.team_id) {
+          setIsLeader(false);
+          setSummary('Você não está associado a nenhum time.');
+          return;
+        }
+
+        // Busca os dados do time
+        const team = await teamService.getTeamById(user.team_id);
+        
+        // Verifica se o usuário é o líder do time
+        const userIsLeader = team.leaderId === userId;
+        setIsLeader(userIsLeader);
+
+        setSummary('Seu assistente de feedback está pronto para ajudar!');
+
+      } catch (err) {
+        console.error('Erro ao carregar dados:', err);
+        setError('Erro ao carregar dados do usuário. Tente novamente mais tarde.');
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchUserData();
   }, []);
-  */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="w-48 h-48 relative mb-10">
+          <Image
+            src="/images/lino.png"
+            alt="Logo Lino"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        <p className="text-gray-600">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="w-48 h-48 relative mb-10">
+          <Image
+            src="/images/lino.png"
+            alt="Logo Lino"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-secondary"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <header className="flex justify-between items-right p-4">
+       
+        {/* Ícone Home */}
+        <Button onClick={() => authService.logout()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <FaDoorOpen className="text-4xl" />
+        </Button>
+      </header>
       {/* Logo centralizado */}
       <div className="w-48 h-48 relative mb-10">
         <Image
