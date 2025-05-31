@@ -77,7 +77,6 @@ export default function LoginPage() {
       }
       
       // Redirecionamento após login social
-      router.push('/dashboard');
     } catch (error) {
       console.error(`${provider} login failed:`, error);
       setLoginError(`Falha no login com ${provider}. Tente novamente.`);
