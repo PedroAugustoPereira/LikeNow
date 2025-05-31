@@ -257,7 +257,7 @@ export default function RecordPage() {
             setShowTextInput(!showTextInput);
             if (audioUrl) setAudioUrl(null); // Limpa o áudio se estiver gravado
           }}
-          className="text-orange-600 dark:text-orange-400 hover:underline flex items-center mb-4"
+          className="text-primary dark:text-primary hover:underline flex items-center mb-4"
         >
           <FaKeyboard className="mr-2" />
           {showTextInput ? 'Ou grave seu feedback' : 'Ou digite seu feedback'}
@@ -271,16 +271,20 @@ export default function RecordPage() {
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               placeholder="Digite seu feedback aqui..."
-              className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-800 dark:text-white"
+              className={`w-full p-4 border  ${isAnonymous ? 'dark:border-gray-600 dark:bg-gray-800 dark:text-white' : 'border-gray-300  rounded-lg focus:outline-none focus:ring-2 bg-stone-100 focus:ring-primary '}`}
               rows={4}
             />
             <button 
               onClick={handleSubmit}
               disabled={!feedbackText.trim()}
               className={`mt-2 w-full py-3 px-4 rounded-full flex items-center justify-center gap-2 ${
-                feedbackText.trim() 
-                  ? 'bg-orange-400 hover:bg-orange-500 text-white' 
-                  : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+                !feedbackText.trim()
+                  ? isAnonymous
+                    ? 'bg-gray-800 text-white opacity-60 cursor-not-allowed'
+                    : 'bg-primary text-white border border-primary opacity-60 cursor-not-allowed'
+                  : isAnonymous
+                    ? 'bg-gray-800 text-white hover:bg-gray-700'
+                    : 'bg-primary text-white border border-primary hover:bg-secundary'
               }`}
             >
               Enviar para o Lino <FaPaperPlane />
@@ -295,7 +299,7 @@ export default function RecordPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => wavesurferRef.current?.playPause()}
-                className="p-2 rounded-full bg-orange-400 hover:bg-orange-500 text-white"
+                className="p-4 rounded-full bg-orange-400 hover:bg-orange-500 text-white"
                 disabled={!isWaveReady}
               >
                 {isPlaying ? <FaPause /> : <FaPlay />}

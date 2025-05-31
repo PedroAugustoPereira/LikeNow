@@ -27,7 +27,7 @@ export default function SendedPage() {
       <div className="flex flex-col gap-4 w-full max-w-xs">
         <Link
           href="/feedback/record"
-          className="flex items-center justify-center px-6 py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
+          className="flex items-center justify-center px-6 py-3 bg-primary text-white rounded-full hover:bg-secundary transition-colors"
         >
           <FaArrowLeft className="mr-2" />
           Falar com Lino novamente

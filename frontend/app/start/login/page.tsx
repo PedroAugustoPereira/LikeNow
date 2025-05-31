@@ -5,6 +5,7 @@ import React from 'react';
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { FaSlack } from "react-icons/fa";
+import { useRouter } from 'next/navigation'; // Importe o useRouter
 
 type LoginFormData = {
   email: string;
@@ -13,6 +14,9 @@ type LoginFormData = {
 };
 
 export default function LoginPage() {
+  
+  const router = useRouter(); // Inicialize o router
+
   const {
     register,
     handleSubmit,
@@ -29,6 +33,8 @@ export default function LoginPage() {
   const onSubmit = (data: LoginFormData) => {
     // Substituir por chamada à API de login
     console.log("Login attempt with data:", data);
+    
+    router.push('/');
   };
 
   // --- Lógica para classes de input dinâmicas ---
@@ -146,7 +152,7 @@ export default function LoginPage() {
             <div>
               <Link
                 href="#" // Substituir pelo link real de "esqueci a senha"
-                className="font-medium text-primary hover:text-secunday"
+                className="font-medium text-primary hover:text-secundary"
               >
                 Esqueceu sua senha?
               </Link>
@@ -158,7 +164,7 @@ export default function LoginPage() {
               type="submit"
               disabled={!isValid || isSubmitting} 
               className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white 
-                ${isValid && !isSubmitting ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : 'bg-gray-400 cursor-not-allowed'}
+                ${isValid && !isSubmitting ? 'bg-primary hover:bg-secundary focus:ring-secundary cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}
                  focus:outline-none focus:ring-2 focus:ring-offset-2`}
             >
               {isSubmitting ? "Entrando..." : "Entrar"}
