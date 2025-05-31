@@ -155,15 +155,6 @@ export default function RecordPage() {
     setIsLoading(true);
     
     try {
-      if (!receiverUserId) {
-        throw new Error('Destinatário não definido');
-      }
-
-      let feedbackData: SendFeedbackData = {
-        receiverUserId,
-        message: '',
-        ...(!isAnonymous && { senderUserId: localStorage.getItem('user_id') || undefined })
-      };
 
       if (audioUrl && !showTextInput) {
         const response = await fetch(audioUrl);
@@ -183,14 +174,14 @@ export default function RecordPage() {
           })
         );
       } else {
-        feedbackData.message = await enviarParaOpenAI(feedbackText|| "") || "";
+        let texto = await enviarParaOpenAI(feedbackText|| "") || "";
         
         // Salva localmente para review
         localStorage.setItem(
           "ultimoFeedback",
           JSON.stringify({
             isAnonymous,
-            text: feedbackData.message,
+            text: texto,
             tipo: "texto",
             data: new Date().toISOString(),
           })
