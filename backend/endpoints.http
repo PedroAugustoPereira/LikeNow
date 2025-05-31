@@ -1,0 +1,13 @@
+#
+POST http://localhost:3000/feedback/sendFeedback
+Content-Type: application/json
+
+{
+  "userId": "cmbc0s0wv0000q47wtb3ln21f",
+  "message": "Transcrição original: Então, eu acabei de sair da reunião aqui com o Jefferson, e o Jefferson infelizmente tá me tratando de uma forma que eu não gosto, ele não tem escutado as minhas opiniões, não tem realmente me dado nenhuma atenção, então eu gostaria de ter um melhor tratamento do meu chefe, e por esse motivo que eu tô mandando o áudio."
+}
+
+
+
+####
+GET http://localhost:3000/user
