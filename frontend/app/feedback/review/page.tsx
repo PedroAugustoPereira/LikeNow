@@ -258,26 +258,6 @@ export default function ReviewPage() {
           </div>
         </div>
 
-        {/* Toggle de anonimato */}
-        <div className="flex items-center justify-center mb-4">
-          <label htmlFor="anonymous-toggle" className="flex items-center cursor-pointer">
-            <div className="relative">
-              <input 
-                type="checkbox" 
-                id="anonymous-toggle" 
-                className="sr-only" 
-                checked={isAnonymous}
-                onChange={() => setIsAnonymous(!isAnonymous)}
-              />
-              <div className={`block w-14 h-8 rounded-full ${isAnonymous ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${isAnonymous ? 'transform translate-x-6' : ''}`}></div>
-            </div>
-            <span className={`ml-3 text-sm font-medium ${isAnonymous ? 'text-white' : 'text-gray-700'}`}>
-              {isAnonymous ? 'Anônimo' : 'Identificado'}
-            </span>
-          </label>
-        </div>
-
         {/* Opção "Entendi algo errado?" como toggle */}
         {!reviewConcluido && (
           <div className="flex items-center">
