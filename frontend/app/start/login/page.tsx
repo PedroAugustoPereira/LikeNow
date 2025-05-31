@@ -56,7 +56,7 @@ export default function LoginPage() {
         {/* Logo - Centralizado no painel */}
         <div className="flex justify-center">
             <img 
-              src="/images/lino_icon.png"
+              src="/images/lino.png"
               alt="Logo Lino"
               className="h-40 place-self-center"
             />
@@ -146,7 +146,7 @@ export default function LoginPage() {
             <div>
               <Link
                 href="#" // Substituir pelo link real de "esqueci a senha"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-primary hover:text-secunday"
               >
                 Esqueceu sua senha?
               </Link>

@@ -10,7 +10,7 @@ export default function HomePage() {
       {/* Logo centralizado */}
       <div className="w-48 h-48 relative mb-10">
         <Image
-          src="/images/lino_icon.png"
+          src="/images/lino.png"
           alt="Logo Lino"
           fill
           className="object-contain"

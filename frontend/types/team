@@ -1,0 +1,6 @@
+export interface Team {
+    id: string;
+    nome: string;
+    user_id_leader: string;
+    company_id: string;
+}
