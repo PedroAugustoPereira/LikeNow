@@ -20,29 +20,42 @@ export class UserService {
   }
 
   async findAll() {
-    return await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return users.map(({ password, ...user }) => user);
   }
 
   async findOne(id: string) {
-    return await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
+    if (!user) throw new Error('User not found');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
-  async updatePassword(id: string, password: string) {
-    if (password !== '1234') {
-      return await this.prisma.user.update({
+  async updatePassword(id: string, passwordIn: string) {
+    if (passwordIn !== '1234') {
+      const user = await this.prisma.user.update({
         where: { id },
-        data: { password: bcrypt.hashSync(password, 10) },
+        data: { password: bcrypt.hashSync(passwordIn, 10) },
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
     }
+    return null;
   }
 
   async remove(id: string) {
