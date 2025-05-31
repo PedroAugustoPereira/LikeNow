@@ -11,6 +11,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Controller('user')
 export class UserController {
@@ -34,6 +35,14 @@ export class UserController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
+  }
+
+  @Patch('/password/:id')
+  updatePassword(
+    @Param('id') id: string,
+    @Body() UpdateUserPasswordDto: UpdateUserPasswordDto,
+  ) {
+    return this.userService.updatePassword(id, UpdateUserPasswordDto.password);
   }
 
   @Delete(':id')

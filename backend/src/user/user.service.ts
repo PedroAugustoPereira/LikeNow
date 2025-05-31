@@ -11,12 +11,19 @@ export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
-    return await this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        password: await bcrypt.hash(createUserDto.password, 10),
-      },
-    });
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...newUser } = await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+          password: '1234',
+        },
+      });
+      return newUser;
+    } catch (error) {
+      console.log('Error creating user:', error);
+      return null;
+    }
   }
 
   async findAll() {

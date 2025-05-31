@@ -16,32 +16,32 @@ export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @Post()
-  create(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamService.create(createTeamDto);
+  async create(@Body() createTeamDto: CreateTeamDto) {
+    return await this.teamService.create(createTeamDto);
   }
 
   @Get()
-  findAll() {
-    return this.teamService.findAll();
+  async findAll() {
+    return await this.teamService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.teamService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.teamService.findOne(id);
   }
 
   @Get('/leader/:id')
-  findLeader(@Param('id') id: string) {
-    return this.teamService.findLeader(id);
+  async findLeader(@Param('id') id: string) {
+    return await this.teamService.findLeader(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTeamDto: UpdateTeamDto) {
-    return this.teamService.update(id, updateTeamDto);
+  async update(@Param('id') id: string, @Body() updateTeamDto: UpdateTeamDto) {
+    return await this.teamService.update(id, updateTeamDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.teamService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.teamService.remove(id);
   }
 }

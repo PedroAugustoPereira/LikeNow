@@ -9,19 +9,30 @@ export class TeamService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createTeamDto: CreateTeamDto) {
-    const { name, leaderId, enterpriseId } = createTeamDto;
+    const { name, leaderId, enterpriseId, leaderSlackId } = createTeamDto;
 
-    if (!leaderId) throw new Error('Leader ID is required');
+    const searchTeam = await this.prisma.team.findFirst({
+      where: { name, enterpriseId },
+    });
+    if (searchTeam) return 'Team already exists';
+
+    if (!leaderId) return null;
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
     });
-    if (!leader) throw new Error('Leader not found');
+    if (!leader) return 'Leader not found';
+
+    const enterprise = await this.prisma.enterprise.findUnique({
+      where: { id: enterpriseId },
+    });
+    if (!enterprise) return 'Enterprise not found';
 
     return await this.prisma.team.create({
       data: {
         name,
-        leaderId: leaderId,
+        leaderId,
         enterpriseId,
+        leaderSlackId,
       },
     });
   }
