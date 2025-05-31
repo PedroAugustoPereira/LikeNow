@@ -31,6 +31,7 @@ async function main() {
   });
 
   // 4. Criar Team com admin e user
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const team = await prisma.team.create({
     data: {
       name: 'Equipe Alpha',
@@ -46,6 +47,7 @@ async function main() {
   await prisma.feedback.create({
     data: {
       userId: user.id,
+      message: 'Este é um feedback de exemplo.',
     },
   });
 }

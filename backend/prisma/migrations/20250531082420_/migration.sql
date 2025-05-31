@@ -16,7 +16,7 @@ CREATE TABLE "Team" (
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "liderId" TEXT NOT NULL,
+    "leaderId" TEXT NOT NULL,
     "enterpriseId" TEXT NOT NULL,
 
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
@@ -35,7 +35,8 @@ CREATE TABLE "Enterprise" (
 CREATE TABLE "Feedback" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "Date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "message" TEXT NOT NULL,
 
     CONSTRAINT "Feedback_pkey" PRIMARY KEY ("id")
 );

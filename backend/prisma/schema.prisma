@@ -44,8 +44,8 @@ model Feedback {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  Date      DateTime @default(now())
-  Message   String
+  date      DateTime @default(now())
+  message   String
 }
 
 
