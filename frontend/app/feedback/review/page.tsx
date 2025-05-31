@@ -5,7 +5,7 @@ import { FaMicrophone, FaKeyboard, FaArrowLeft, FaPaperPlane, FaArrowUp } from '
 import Image from 'next/image';
 import Link from 'next/link';
 import { transcreverAudio } from '../../utils/transcribe';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 
 export default function ReviewPage() {
   const [needsResponse, setNeedsResponse] = useState(false);
@@ -13,23 +13,50 @@ export default function ReviewPage() {
   const [showTextInput, setShowTextInput] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [reviewText, setReviewText] = useState("");
+  const [displayedReviewText, setDisplayedReviewText] = useState("");
   const [audioRecorded, setAudioRecorded] = useState(false);
-  const [reviewConcluido, setReviewConcluido] = useState(false); // NOVO STATE
-  const [reloadCount, setReloadCount] = useState(0); // Novo state para contar reloads
+  const [reviewConcluido, setReviewConcluido] = useState(false);
+  const [reloadCount, setReloadCount] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false); // Novo estado para controlar o loading
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null); // Armazena o blob do áudio
   const maxReloads = 5;
-  const router = useRouter(); // Inicialize o router
-
+  const router = useRouter();
+  const textContainerRef = useRef<HTMLDivElement>(null);
 
   // Referências para gravação de áudio
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Efeito para animação de digitação
+  useEffect(() => {
+    let currentIndex = 0;
+    const typingSpeed = 20;
+
+    if (reviewText.length > 0 && displayedReviewText.length < reviewText.length) {
+      const timer = setInterval(() => {
+        setDisplayedReviewText(reviewText.substring(0, currentIndex));
+        currentIndex++;
+        
+        if (textContainerRef.current) {
+          textContainerRef.current.scrollTop = textContainerRef.current.scrollHeight;
+        }
+
+        if (currentIndex > reviewText.length) {
+          clearInterval(timer);
+        }
+      }, typingSpeed);
+
+      return () => clearInterval(timer);
+    }
+  }, [reviewText]);
 
   useEffect(() => {
     const saved = localStorage.getItem("ultimoFeedback");
     if (saved != null) {
       try {
         const obj = JSON.parse(saved);
-        setReviewText(obj.textoTranscrito || obj.text || "");
+        const text = obj.textoTranscrito || obj.text || "";
+        setReviewText(text);
       } catch {
         setReviewText(saved);
       }
@@ -48,14 +75,11 @@ export default function ReviewPage() {
         audioChunksRef.current.push(event.data);
       };
 
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        // Chama a transcrição e coloca o texto no feedbackText
-        const texto = await transcreverAudio(audioBlob);
-        setFeedbackText(texto || "");
-        console.log("Texto transcrito:", texto); // <-- Exibe no console
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        setAudioBlob(blob); // Armazena o blob para transcrição posterior
+        setAudioRecorded(true);
         audioChunksRef.current = [];
-        setAudioRecorded(true); // Marca que já gravou
       };
 
       mediaRecorderRef.current.start();
@@ -73,7 +97,7 @@ export default function ReviewPage() {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
-      setAudioRecorded(true); // Marca que já gravou
+      setAudioRecorded(true);
     }
   };
 
@@ -90,22 +114,40 @@ export default function ReviewPage() {
     setIsRecording(false);
   };
 
-  // Atualizado: agora seta reviewConcluido ao dar reload
-  const handleReload = () => {
-    if (feedbackText.trim() && reloadCount < maxReloads) {
-      setReviewText(prev => prev + (prev ? "\n\n" : "") + feedbackText.trim());
-      setFeedbackText("");
-      setAudioRecorded(false);
-      setShowTextInput(false);
-      setReloadCount(count => count + 1);
-      if (reloadCount + 1 >= maxReloads) {
-        setReviewConcluido(true); // Marca como concluído após 5 reloads
-        setNeedsResponse(false);  // Esconde o toggle
-      } else {
-        setNeedsResponse(false); // Fecha o toggle, mas permite abrir de novo
+  const handleReload = async () => {
+    if ((!feedbackText.trim() && !audioBlob) || reloadCount >= maxReloads) return;
+
+    setIsProcessing(true); // Ativa o loading
+
+    try {
+      let textoParaAdicionar = feedbackText;
+
+      // Se tivermos um áudio gravado mas não texto digitado, faz a transcrição
+      if (audioBlob && !feedbackText.trim()) {
+        textoParaAdicionar = await transcreverAudio(audioBlob)|| "";
       }
+
+      if (textoParaAdicionar.trim()) {
+        const newText = reviewText + (reviewText ? "\n\n" : "") + textoParaAdicionar.trim();
+        setReviewText(newText);
+        setFeedbackText("");
+        setAudioBlob(null);
+        setAudioRecorded(false);
+        setShowTextInput(false);
+        setReloadCount(count => count + 1);
+        setNeedsResponse(false);
+
+        if (reloadCount + 1 >= maxReloads) {
+          setReviewConcluido(true);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao processar:', error);
+      alert('Ocorreu um erro ao processar seu feedback');
+    } finally {
+      setIsProcessing(false); // Desativa o loading
     }
-  }
+  };
 
   const handleSubmit = () => {
     console.log('Feedback enviado:', {
@@ -113,13 +155,29 @@ export default function ReviewPage() {
       responseText: feedbackText,
       needsResponse
     });
-    // Lógica para enviar para o backend
-    setNeedsResponse(false); // Fecha o toggle, mas permite abrir de novo
     router.push('/feedback/sended');
   };
 
+  // Se estiver processando, mostra o overlay de loading
+  if (isProcessing) {
+    return (
+        <div
+        className="min-h-screen font-sans flex flex-col items-center justify-center transition-colors duration-300 bg-gray-50 text-gray-700"
+      >
+        <img
+          src="/images/lino_think.png"
+          alt="Logo Lino"
+          className="h-40 mb-8"
+        />
+        <p className="text-xl text-center mb-8">
+          Pensando na melhor resposta para você...
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col  bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Cabeçalho com logo */}
       <header className="flex justify-center p-4">
         <div className="w-24 h-24 relative">
@@ -134,11 +192,18 @@ export default function ReviewPage() {
 
       {/* Área de conteúdo principal */}
       <main className="flex-grow flex flex-col px-4 pb-42">
-        {/* Caixa de texto readonly */}
-        <div className="bg-white p-4 rounded-lg shadow-md flex-grow overflow-y-auto mb-4">
+        {/* Caixa de texto com scroll e animação */}
+        <div 
+          ref={textContainerRef}
+          className="bg-white p-4 rounded-lg shadow-md flex-grow overflow-y-auto mb-4 min-h-[200px]"
+          style={{ whiteSpace: 'pre-line' }}
+        >
           <div className="prose max-w-none">
-            <p className="whitespace-pre-line text-gray-700">
-              {reviewText}
+            <p className="text-gray-700">
+              {displayedReviewText}
+              {displayedReviewText.length < reviewText.length && (
+                <span className="animate-blink">|</span>
+              )}
             </p>
           </div>
         </div>
@@ -155,7 +220,7 @@ export default function ReviewPage() {
                   checked={needsResponse}
                   onChange={() => setNeedsResponse(v => !v)}
                 />
-                <div className={`block w-14 h-8 rounded-full ${needsResponse ? 'bg-orange-600' : 'bg-gray-300'}`}></div>
+                <div className={`block w-14 h-8 rounded-full ${needsResponse ? 'bg-secundary' : 'bg-gray-300'}`}></div>
                 <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${needsResponse ? 'transform translate-x-6' : ''}`}></div>
               </div>
               <span className="ml-3 text-md font-medium text-gray-700">
@@ -168,7 +233,7 @@ export default function ReviewPage() {
 
       {/* Barra de ações fixa na parte inferior */}
       <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-        {/* Área de resposta (se necessário) - Agora no footer */}
+        {/* Área de resposta (se necessário) */}
         {needsResponse && (
           <div className="px-4 pt-3 transition-all duration-300">
             {showTextInput ? (
@@ -176,7 +241,7 @@ export default function ReviewPage() {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder="Digite sua resposta aqui..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 rows={2}
               />
             ) : isRecording ? (
@@ -186,12 +251,12 @@ export default function ReviewPage() {
             ) : audioRecorded ? (
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
                 <span className="text-green-700">
-                  Áudio gravado! Clique no microfone para sobrescrever.
+                  Áudio gravado!
                 </span>
               </div>
             ) : (
-              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg text-center">
-                <span className="text-orange-600">Clique no microfone para gravar</span>
+              <div className="p-3 bg-white border border-secundary opacity-30 rounded-lg text-center">
+                <span className="text-primary">Clique no microfone para gravar</span>
               </div>
             )}
           </div>
@@ -219,7 +284,7 @@ export default function ReviewPage() {
                 </button>
                 <button
                   onClick={toggleTextInput}
-                  className={`p-4 rounded-full ${showTextInput ? 'bg-orange-500 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                  className={`p-4 rounded-full ${showTextInput ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
                 >
                   <FaKeyboard size={20} />
                 </button>
@@ -232,13 +297,13 @@ export default function ReviewPage() {
             <button
               onClick={handleReload}
               className={`p-4 rounded-full bg-sky-400 hover:bg-sky-500 text-white transition ${
-                !feedbackText.trim() || reloadCount >= maxReloads ? "opacity-50 cursor-not-allowed" : ""
+                (!feedbackText.trim() && !audioBlob) || reloadCount >= maxReloads ? "opacity-50 cursor-not-allowed" : ""
               }`}
-              disabled={!feedbackText.trim() || reloadCount >= maxReloads}
+              disabled={(!feedbackText.trim() && !audioBlob) || reloadCount >= maxReloads}
               title={
                 reloadCount >= maxReloads
                   ? "Limite de 5 respostas atingido"
-                  : !feedbackText.trim()
+                  : (!feedbackText.trim() && !audioBlob)
                   ? "Grave ou digite uma resposta para habilitar"
                   : ""
               }

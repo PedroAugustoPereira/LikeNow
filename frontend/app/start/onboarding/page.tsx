@@ -155,7 +155,7 @@ export default function OnboardingPage() {
               type="submit"
               disabled={!isValid || isSubmitting} 
               className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white 
-                ${isValid && !isSubmitting ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : 'bg-gray-400 cursor-not-allowed'}
+                ${isValid && !isSubmitting ? 'bg-primary hover:bg-secundary focus:ring-primary cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}
                  focus:outline-none focus:ring-2 focus:ring-offset-2`}
             >
               {isSubmitting ? "Enviando..." : "Concluir cadastro"}
