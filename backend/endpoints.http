@@ -1,18 +1,19 @@
 #
 POST http://localhost:3000/feedback/sendFeedback
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWJjYTRreXkwMDAycTQ1dWpueWUxenl6IiwiaWF0IjoxNzQ4NzAzNjU1LCJleHAiOjE3NDg3OTAwNTV9.NI7mMIeUB_VwN3EB8ipNWYnWzXVVIcSzKXrNz6iIto8
 
 {
-  "userId": "cmbc0s0wv0000q47wtb3ln21f",
-  "message": "Transcrição original: Então, eu acabei de sair da reunião aqui com o Jefferson, e o Jefferson infelizmente tá me tratando de uma forma que eu não gosto, ele não tem escutado as minhas opiniões, não tem realmente me dado nenhuma atenção, então eu gostaria de ter um melhor tratamento do meu chefe, e por esse motivo que eu tô mandando o áudio."
+  "senderUserId": "cmbca4kyy0002q45ujnye1zyz",
+  "message": "Transcrição original: Então, eu acabei de sair da reunião aqui com o Jefferson, e o Jefferson infelizmente tá me tratando de uma forma que eu não gosto, ele não tem escutado as minhas opiniões, não tem realmente me dado nenhuma atenção, então eu gostaria de ter um melhor tratamento do meu chefe, e por esse motivo que eu tô mandando o áudio.",
+  "receiverUserId" : "cmbca4kxc0000q45u7b9vuwl1" 
 }
-
 
 
 ####
 GET http://localhost:3000/user
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWJjODV1MTUwMDAycTRqcnBqeWVqeG45IiwiaWF0IjoxNzQ4Njk1NjE3LCJleHAiOjE3NDg3ODIwMTd9.OGJRdTM-hwYqwYdIN-8FR7KzO011Fy9yzN4iqXdfrSg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWJjYTRreXkwMDAycTQ1dWpueWUxenl6IiwiaWF0IjoxNzQ4NzAzMjc1LCJleHAiOjE3NDg3ODk2NzV9.90K-Ufbv0G4u0RlvnIvv1Xdchil2kgwc6OpyJY8RMmo
 
 
 ###

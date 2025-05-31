@@ -3,8 +3,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import OpenAI from 'openai';
-import { sendDM } from 'src/third_party/slack';
-
+import { sendDM, uploadAudioFile } from 'src/third_party/slack';
+import * as fs from 'fs';
+import * as path from 'path';
+import { pipeline } from 'stream/promises';
 @Injectable()
 export class FeedbackService {
   constructor(private readonly prisma: PrismaService) {}
@@ -56,7 +58,36 @@ export class FeedbackService {
       },
     });
 
-    sendDM('U08UMRX2SG6', feedback.message);
+    let nomeArquivo = '';
+    try {
+      const responseAduio = await openai.audio.speech.create({
+        model: 'tts-1',
+        voice: 'ash', // Opções: alloy, echo, fable, onyx, nova, shimmer
+        input: feedback.message,
+      });
+
+      //const arrayBuffer = await responseAudio.arrayBuffer();
+      nomeArquivo = path.resolve(__dirname, "saida_tts.mp3");
+      //const stream = responseAduio as any;
+      
+      const readable = responseAduio.body;
+      if (!readable) throw new Error('Stream de áudio não retornada');
+
+      await pipeline(readable, fs.createWriteStream(nomeArquivo));
+
+      
+
+      console.log(`Áudio gerado e salvo em ${nomeArquivo}`);
+    } catch (e) {
+      console.error('Erro ao gerar áudio:', e);
+    }
+
+    await sendDM('U08UMRX2SG6', feedback.message);
+    await uploadAudioFile(nomeArquivo, 'U08UMRX2SG6')
+
+    fs.unlink(nomeArquivo, (err) => {
+      console.log(err);
+    })
 
     return feedback;
   }
@@ -77,3 +108,7 @@ export class FeedbackService {
     });
   }
 }
+function pump(stream: any, arg1: fs.WriteStream) {
+  throw new Error('Function not implemented.');
+}
+
