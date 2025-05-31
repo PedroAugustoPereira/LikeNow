@@ -34,7 +34,7 @@ async function main() {
   const team = await prisma.team.create({
     data: {
       name: 'Equipe Alpha',
-      liderId: adminUser.id,
+      leaderId: adminUser.id,
       enterpriseId: enterprise.id,
       users: {
         connect: [{ id: adminUser.id }, { id: user.id }],
