@@ -2,12 +2,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaMicrophone, FaHistory, FaDoorOpen } from 'react-icons/fa';
+import { FaMicrophone, FaHistory } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import userService from '../services/user_service';
 import teamService from '../services/team_service';
 import authService from '../services/auth_service';
 import { Button } from 'flowbite-react';
+import { FiLogOut } from 'react-icons/fi';
 
 export default function HomePage() {
   const [isLeader, setIsLeader] = useState(false);
@@ -99,13 +100,15 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <header className="flex justify-between items-right p-4">
-       
-        {/* Ícone Home */}
-        <Button onClick={() => authService.logout()} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-          <FaDoorOpen className="text-4xl" />
-        </Button>
-      </header>
+      <header className="absolute top-4 right-4">
+  <Button
+    onClick={() => authService.logout()}
+    className="p-2 bg-primary/70 hover:bg-primary text-white rounded-full transition-opacity"
+  >
+    <FiLogOut className="text-xl" />
+  </Button>
+</header>
+
       {/* Logo centralizado */}
       <div className="w-48 h-48 relative mb-10">
         <Image

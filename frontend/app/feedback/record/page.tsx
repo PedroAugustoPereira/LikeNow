@@ -9,16 +9,42 @@ import WaveSurfer from "wavesurfer.js";
 import { transcreverAudio } from '../../utils/transcribe';
 import { useRouter } from 'next/navigation'; 
 import authService from '@/services/auth_service';
+import feedbackService, { SendFeedbackData } from '@/services/feedback_service';
+import userService from '@/services/user_service';
+import teamService from '@/services/team_service';
+import { enviarParaOpenAI } from '@/app/utils/makeSuma';
 
 export default function RecordPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const router = useRouter(); // Inicialize o router
   const [isLoading, setIsLoading] = useState(false); // Estado para controlar o loading
+  const [receiverUserId, setReceiverUserId] = useState<string | null>(null);
 
+  
+  // Verifica autenticação e obtém o ID do destinatário
   useEffect(() => {
     authService.checkAuthentication();
+    
+    // Obtém o ID do destinatário (pode ser do localStorage ou de uma API)
+    async function fetchReceiverId() {
+      try {
+        // Exemplo: pegar o líder do time do usuário atual
+        const userId = localStorage.getItem('user_id');
+        if (!userId) return;
+        
+        const user = await userService.getUserById(userId);
+        if (user.team_id) {
+          const team = await teamService.getTeamById(user.team_id);
+          setReceiverUserId(team.leaderId);
+        }
+      } catch (error) {
+        console.error('Erro ao obter destinatário:', error);
+        // Pode definir um destinatário padrão ou lidar com o erro
+      }
+    }
+    
+    fetchReceiverId();
   }, []);
-
   // Carrega o valor salvo ao iniciar
   useEffect(() => {
     const saved = localStorage.getItem("isAnonymous");
@@ -124,15 +150,28 @@ export default function RecordPage() {
     }
   };
 
+  
   const handleSubmit = async () => {
-    setIsLoading(true); // Ativa o loading
+    setIsLoading(true);
     
     try {
+      if (!receiverUserId) {
+        throw new Error('Destinatário não definido');
+      }
+
+      let feedbackData: SendFeedbackData = {
+        receiverUserId,
+        message: '',
+        ...(!isAnonymous && { senderUserId: localStorage.getItem('user_id') || undefined })
+      };
+
       if (audioUrl && !showTextInput) {
         const response = await fetch(audioUrl);
         const audioBlob = await response.blob();
-        const textoTranscrito = await transcreverAudio(audioBlob);
+        let textoTranscrito = await transcreverAudio(audioBlob);
+        textoTranscrito = await enviarParaOpenAI(textoTranscrito|| "") || "";
 
+        // Salva localmente para review
         localStorage.setItem(
           "ultimoFeedback",
           JSON.stringify({
@@ -143,38 +182,30 @@ export default function RecordPage() {
             data: new Date().toISOString(),
           })
         );
-
-        console.log('Feedback enviado:', {
-          isAnonymous,
-          audioUrl,
-          textoTranscrito,
-        });
       } else {
+        feedbackData.message = await enviarParaOpenAI(feedbackText|| "") || "";
+        
+        // Salva localmente para review
         localStorage.setItem(
           "ultimoFeedback",
           JSON.stringify({
             isAnonymous,
-            text: feedbackText,
+            text: feedbackData.message,
             tipo: "texto",
             data: new Date().toISOString(),
           })
         );
-
-        console.log('Feedback enviado:', {
-          isAnonymous,
-          text: feedbackText
-        });
       }
 
-      // Simula um tempo de processamento (remova em produção)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // Redireciona para a tela de review
       router.push('/feedback/review');
       
     } catch (error) {
       console.error('Erro ao enviar feedback:', error);
-      setIsLoading(false); // Desativa o loading em caso de erro
+      alert('Erro ao enviar feedback. Por favor, tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -9,6 +9,7 @@ export interface Feedback {
   createdAt?: string;
   updatedAt?: string;
   isAnonymous?: boolean;
+  senderName?: string;
 }
 
 // Tipo para envio de feedback

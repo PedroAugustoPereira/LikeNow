@@ -7,6 +7,10 @@ import Link from 'next/link';
 import { transcreverAudio } from '../../utils/transcribe';
 import { useRouter } from 'next/navigation';
 import authService from '@/services/auth_service';
+import { enviarParaOpenAI } from '@/app/utils/makeSuma';
+import user_service from '@/services/user_service';
+import team_service from '@/services/team_service';
+import feedback_service from '@/services/feedback_service';
 
 export default function ReviewPage() {
   const [needsResponse, setNeedsResponse] = useState(false);
@@ -20,6 +24,7 @@ export default function ReviewPage() {
   const [reloadCount, setReloadCount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false); // Novo estado para controlar o loading
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null); // Armazena o blob do áudio
+  const [isAnonymous, setIsAnonymous] = useState(false); // Estado para controle de anonimato
   const maxReloads = 5;
   const router = useRouter();
   const textContainerRef = useRef<HTMLDivElement>(null);
@@ -61,12 +66,21 @@ export default function ReviewPage() {
       try {
         const obj = JSON.parse(saved);
         const text = obj.textoTranscrito || obj.text || "";
+        setIsAnonymous(obj.isAnonymous);
         setReviewText(text);
       } catch {
         setReviewText(saved);
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (isAnonymous) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isAnonymous]);
 
   // Função para iniciar gravação
   const startRecording = async () => {
@@ -133,8 +147,8 @@ export default function ReviewPage() {
       }
 
       if (textoParaAdicionar.trim()) {
-        const newText = reviewText + (reviewText ? "\n\n" : "") + textoParaAdicionar.trim();
-        setReviewText(newText);
+        const newText = await enviarParaOpenAI( "Você lino falou isso "+ reviewText + (reviewText ? "\n\n" : "") +" mas eu acho que " + textoParaAdicionar.trim());
+        setReviewText(newText || "");
         setFeedbackText("");
         setAudioBlob(null);
         setAudioRecorded(false);
@@ -154,21 +168,50 @@ export default function ReviewPage() {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Feedback enviado:', {
-      reviewText,
-      responseText: feedbackText,
-      needsResponse
-    });
-    router.push('/feedback/sended');
-  };
+  const handleSubmit = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        throw new Error('Usuário não autenticado');
+      }
 
-  // Se estiver processando, mostra o overlay de loading
-  if (isProcessing) {
+      // Obtém o destinatário (líder do time do usuário)
+      const user = await user_service.getUserById(userId);
+      if (!user.team_id) {
+        throw new Error('Usuário não está em um time');
+      }
+
+      const team = await team_service.getTeamById(user.team_id);
+      const receiverUserId = team.leaderId;
+
+      // Prepara os dados do feedback
+      const feedbackData = {
+        receiverUserId,
+        message: reviewText,
+        ...(!isAnonymous && { senderUserId: userId })
+      };
+
+      // Envia o feedback
+      await feedback_service.sendFeedback(feedbackData);
+
+      // Redireciona para a página de confirmação
+      router.push('/feedback/sended');
+      
+    } catch (error) {
+      console.error('Erro ao enviar feedback:', error);
+      alert('Erro ao enviar feedback. Por favor, tente novamente.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+   // Se estiver processando, mostra o overlay de loading
+   if (isProcessing) {
     return (
-        <div
-        className="min-h-screen font-sans flex flex-col items-center justify-center transition-colors duration-300 bg-gray-50 text-gray-700"
-      >
+      <div className={`min-h-screen font-sans flex flex-col items-center justify-center transition-colors duration-300 ${
+        isAnonymous ? "dark:bg-gray-900 dark:text-white" : "bg-gray-50 text-gray-700"
+      }`}>
         <img
           src="/images/lino_think.png"
           alt="Logo Lino"
@@ -181,13 +224,13 @@ export default function ReviewPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+ return (
+    <div className={`min-h-screen flex flex-col ${isAnonymous ? 'dark:bg-gray-900 dark:text-white' : 'bg-gray-50'}`}>
       {/* Cabeçalho com logo */}
       <header className="flex justify-center p-4">
         <div className="w-24 h-24 relative">
           <Image
-            src="/images/lino_talk.png"
+            src={isAnonymous ? "/images/lino_anom.png" : "/images/lino_talk.png"}
             alt="Logo Lino"
             fill
             className="object-contain"
@@ -200,17 +243,39 @@ export default function ReviewPage() {
         {/* Caixa de texto com scroll e animação */}
         <div 
           ref={textContainerRef}
-          className="bg-white p-4 rounded-lg shadow-md flex-grow overflow-y-auto mb-4 min-h-[200px]"
+          className={`p-4 rounded-lg shadow-md flex-grow overflow-y-auto mb-4 min-h-[200px] ${
+            isAnonymous ? 'dark:bg-gray-800 dark:text-white' : 'bg-white text-gray-700'
+          }`}
           style={{ whiteSpace: 'pre-line' }}
         >
           <div className="prose max-w-none">
-            <p className="text-gray-700">
+            <p>
               {displayedReviewText}
               {displayedReviewText.length < reviewText.length && (
                 <span className="animate-blink">|</span>
               )}
             </p>
           </div>
+        </div>
+
+        {/* Toggle de anonimato */}
+        <div className="flex items-center justify-center mb-4">
+          <label htmlFor="anonymous-toggle" className="flex items-center cursor-pointer">
+            <div className="relative">
+              <input 
+                type="checkbox" 
+                id="anonymous-toggle" 
+                className="sr-only" 
+                checked={isAnonymous}
+                onChange={() => setIsAnonymous(!isAnonymous)}
+              />
+              <div className={`block w-14 h-8 rounded-full ${isAnonymous ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${isAnonymous ? 'transform translate-x-6' : ''}`}></div>
+            </div>
+            <span className={`ml-3 text-sm font-medium ${isAnonymous ? 'text-white' : 'text-gray-700'}`}>
+              {isAnonymous ? 'Anônimo' : 'Identificado'}
+            </span>
+          </label>
         </div>
 
         {/* Opção "Entendi algo errado?" como toggle */}
@@ -225,10 +290,10 @@ export default function ReviewPage() {
                   checked={needsResponse}
                   onChange={() => setNeedsResponse(v => !v)}
                 />
-                <div className={`block w-14 h-8 rounded-full ${needsResponse ? 'bg-secundary' : 'bg-gray-300'}`}></div>
+                <div className={`block w-14 h-8 rounded-full ${needsResponse ? 'bg-secundary' : isAnonymous ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
                 <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${needsResponse ? 'transform translate-x-6' : ''}`}></div>
               </div>
-              <span className="ml-3 text-md font-medium text-gray-700">
+              <span className={`ml-3 text-md font-medium ${isAnonymous ? 'text-white' : 'text-gray-700'}`}>
                 Entendi algo errado?
               </span>
             </label>
@@ -237,7 +302,9 @@ export default function ReviewPage() {
       </main>
 
       {/* Barra de ações fixa na parte inferior */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+      <footer className={`fixed bottom-0 left-0 right-0 border-t ${
+        isAnonymous ? 'dark:bg-gray-800 dark:border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         {/* Área de resposta (se necessário) */}
         {needsResponse && (
           <div className="px-4 pt-3 transition-all duration-300">

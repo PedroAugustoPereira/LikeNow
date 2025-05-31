@@ -6,79 +6,122 @@ import { FiClock, FiCalendar } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
 import authService from '@/services/auth_service';
-
-// Tipo para os feedbacks
-type Feedback = {
-  id: string;
-  senderName: string;
-  isAnonymous: boolean;
-  date: string;
-  text: string;
-  isLeader: boolean; // Indica se foi enviado para o líder
-};
+import feedbackService, { Feedback } from '@/services/feedback_service';
+import userService from '@/services/user_service';
+import teamService from '@/services/team_service';
 
 export default function FeedbackHistoryPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
-  const [isLeader, setIsLeader] = useState(true); // Simulação - substitua pela lógica real
-  
+  const [isLeader, setIsLeader] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     authService.checkAuthentication();
+    fetchUserData();
   }, []);
-  // Simulação de carregamento dos feedbacks
-  useEffect(() => {
-    // Substitua isso pela chamada real à API
-    const loadFeedbacks = async () => {
-      // Simulação de dados
-      const mockFeedbacks: Feedback[] = [
-        {
-          id: '1',
-          senderName: 'João Silva',
-          isAnonymous: false,
-          date: '2023-05-15T14:30:00',
-          text: 'O projeto está progredindo bem, mas acredito que poderíamos melhorar a comunicação entre as equipes. Durante as reuniões, percebo que nem todos têm a oportunidade de falar e compartilhar suas ideias. Sugiro implementarmos rodadas mais estruturadas onde cada membro tenha um tempo dedicado para contribuir.',
-          isLeader: isLeader
-        },
-        {
-          id: '2',
-          senderName: 'Anônimo',
-          isAnonymous: true,
-          date: '2023-05-14T09:15:00',
-          text: 'Gostaria de sugerir mais flexibilidade no horário de trabalho. O modelo atual está causando estresse desnecessário na equipe. Com a possibilidade de horários flexíveis ou trabalho remoto em alguns dias da semana, acredito que poderíamos aumentar significativamente a produtividade e o bem-estar geral.',
-          isLeader: isLeader
-        },
-        {
-          id: '3',
-          senderName: 'Maria Oliveira',
-          isAnonymous: false,
-          date: '2023-05-10T16:45:00',
-          text: 'Adorei a iniciativa do último team building! Foi ótimo para integrar a equipe. Sugiro que façamos atividades assim trimestralmente. Além disso, pense em incluir desafios que incentivem a colaboração entre departamentos diferentes para quebrar as barreiras organizacionais.',
-          isLeader: isLeader
-        }
-      ];
 
-      setFeedbacks(mockFeedbacks);
-    };
+  async function fetchUserData() {
+    try {
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        throw new Error('Usuário não autenticado');
+      }
 
-    loadFeedbacks();
-    
-    // // Simulação de verificação se é líder - substitua pela lógica real
-    // setIsLeader(localStorage.getItem('userRole') === 'leader');
-  }, [isLeader]);
+      // Verifica se o usuário é líder
+      const user = await userService.getUserById(userId);
+      if (user.team_id) {
+        const team = await teamService.getTeamById(user.team_id);
+        setIsLeader(team.leaderId === userId);
+      }
+
+      // Carrega os feedbacks apropriados
+      await loadFeedbacks(userId);
+    } catch (err) {
+      console.error('Erro ao carregar dados:', err);
+      setError('Erro ao carregar histórico de feedbacks');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadFeedbacks(userId: string) {
+    try {
+      let feedbacksData: Feedback[] = [];
+      
+      if (isLeader) {
+        // Se for líder, busca feedbacks recebidos
+        feedbacksData = await feedbackService.getReceivedFeedbacks(userId);
+      } else {
+        // Se não for líder, busca feedbacks enviados
+        feedbacksData = await feedbackService.getSentFeedbacks(userId);
+      }
+
+      // Enriquece os dados com nomes dos remetentes (quando não anônimo)
+      const enrichedFeedbacks = await Promise.all(
+        feedbacksData.map(async (feedback) => {
+          if (!feedback.isAnonymous && feedback.senderUserId) {
+            try {
+              const sender = await userService.getUserById(feedback.senderUserId);
+              return { ...feedback, senderName: sender.name };
+            } catch (err) {
+              console.error('Erro ao buscar remetente:', err);
+              return feedback;
+            }
+          }
+          return feedback;
+        })
+      );
+
+      setFeedbacks(enrichedFeedbacks);
+    } catch (err) {
+      console.error('Erro ao carregar feedbacks:', err);
+      throw err;
+    }
+  }
 
   const toggleExpand = (id: string) => {
     setExpandedFeedback(expandedFeedback === id ? null : id);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <div className="w-16 h-16 relative mb-4">
+          <Image
+            src="/images/lino.png"
+            alt="Logo Lino"
+            fill
+            className="object-contain animate-pulse"
+          />
+        </div>
+        <p className="text-gray-500">Carregando histórico...</p>
+      </div>
+    );
+  }
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="w-16 h-16 relative mb-4">
+          <Image
+            src="/images/lino.png"
+            alt="Logo Lino"
+            fill
+            className="object-contain"
+          />
+        </div>
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={fetchUserData}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-secondary"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -95,7 +138,7 @@ export default function FeedbackHistoryPage() {
               />
             </div>
             <h1 className="text-lg font-bold text-gray-500">
-              {isLeader ? 'Aqui os feedbacks que recebeu' : 'Aqui está seus feedbacks'}
+              {isLeader ? 'Feedbacks recebidos do seu time' : 'Seus feedbacks enviados'}
             </h1>
           </Link>
         </div>
@@ -105,7 +148,15 @@ export default function FeedbackHistoryPage() {
       <main className="flex-grow container mx-auto p-4">
         {feedbacks.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64">
-            <p className="text-gray-500 text-lg">Nenhum feedback encontrado</p>
+            <p className="text-gray-500 text-lg">
+              {isLeader ? 'Nenhum feedback recebido ainda' : 'Você ainda não enviou nenhum feedback'}
+            </p>
+            <Link 
+              href={isLeader ? "/" : "/feedback/record"} 
+              className="mt-4 text-primary hover:underline"
+            >
+              {isLeader ? 'Voltar para home' : 'Enviar um feedback'}
+            </Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -128,18 +179,8 @@ export default function FeedbackHistoryPage() {
                     )}
                     <div>
                       <h3 className="font-medium text-gray-400">
-                        {feedback.isAnonymous ? 'Anônimo' : feedback.senderName}
+                        {feedback.isAnonymous ? 'Anônimo' : feedback.senderName || 'Remetente desconhecido'}
                       </h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                        <span className="flex items-center">
-                          <FiCalendar className="mr-1" />
-                          {formatDate(feedback.date)}
-                        </span>
-                        <span className="flex items-center">
-                          <FiClock className="mr-1" />
-                          {formatTime(feedback.date)}
-                        </span>
-                      </div>
                     </div>
                   </div>
                   <div className="text-gray-400">
@@ -159,8 +200,13 @@ export default function FeedbackHistoryPage() {
                 >
                   <div className="border-t border-gray-100 pt-4">
                     <p className="text-gray-700 whitespace-pre-line">
-                      {feedback.text}
+                      {feedback.message}
                     </p>
+                    {isLeader && !feedback.isAnonymous && feedback.senderUserId && (
+                      <div className="mt-2 text-sm text-gray-500">
+                        Enviado por: {feedback.senderName || 'Usuário ID: ' + feedback.senderUserId}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
