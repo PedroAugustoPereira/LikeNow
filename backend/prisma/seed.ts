@@ -25,8 +25,8 @@ async function main() {
   // 3. Criar outro usuário
   const user = await prisma.user.create({
     data: {
-      email: 'user@example.com',
-      password:  bcrypt.hashSync('user123', 10),
+      email: 'teste@gmail.com',
+      password:  bcrypt.hashSync('1234', 10),
       name: 'Normal User',
     },
   });
