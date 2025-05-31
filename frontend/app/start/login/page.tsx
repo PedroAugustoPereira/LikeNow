@@ -7,7 +7,6 @@ import { FcGoogle } from "react-icons/fc";
 import { FaSlack } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import authService from '@/services/auth_service';
-import userService from '@/services/user_service';
 
 type LoginFormData = {
   email: string;
@@ -39,16 +38,11 @@ export default function LoginPage() {
     
     try {
       // 1. Tentativa de login
-      const authResponse = await authService.login(data.email, data.password);
-      
-      // 2. Obter dados do usuário após login bem-sucedido
-      const user = await userService.getUserById(authResponse.user.id);
-      
-      console.log("Login successful:", user);
+      await authService.login(data.email, data.password);
       
       // 3. Redirecionar com base no tipo de usuário (exemplo)
-      if (user.team_id) {
-        router.push('/dashboard');
+      if (data.password != '1234') {
+        router.push('/');
       } else {
         router.push('/onboarding');
       }
@@ -73,7 +67,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       // Implementação do login social (exemplo)
-      let socialResponse;
+      //let socialResponse;
       if (provider === 'google') {
         // Chamada para API de login com Google
         // socialResponse = await authService.loginWithGoogle();
@@ -164,11 +158,7 @@ export default function LoginPage() {
                 }`}
                 placeholder="Senha"
                 {...register("password", { 
-                  required: "Senha é obrigatória",
-                  minLength: {
-                    value: 6,
-                    message: "Senha deve ter pelo menos 6 caracteres"
-                  }
+                  required: "Senha é obrigatória"
                 })}
               />
               {errors.password && (

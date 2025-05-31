@@ -7,14 +7,8 @@ export interface LoginData {
 }
 
 export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  accessToken: string;
+  user_id: string;
 }
 
 class AuthService {
@@ -41,10 +35,11 @@ class AuthService {
         email,
         password
       });
-
+      console.log(response);
       // Armazena o token no localStorage
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+      if (response.data.accessToken) {
+        localStorage.setItem('authToken', response.data.accessToken);
+        localStorage.setItem('user_id', response.data.user_id);
       }
 
       return response.data;
