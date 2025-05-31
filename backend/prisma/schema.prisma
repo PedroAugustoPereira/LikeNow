@@ -31,7 +31,8 @@ model Team {
   users        User[]     @relation("TeamUsers")
   leaderId      String
   enterprise   Enterprise @relation("EnterpriseTeams", fields: [enterpriseId], references: [id])
-  enterpriseId String
+  enterpriseId  String
+  leaderSlackId String?
 }
 
 model Enterprise {

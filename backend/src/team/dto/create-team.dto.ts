@@ -3,4 +3,5 @@ export class CreateTeamDto {
   leaderId: string;
   emp_id: string;
   enterpriseId: string;
+  leaderSlackId?: string;
 }

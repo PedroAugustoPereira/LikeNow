@@ -10,6 +10,11 @@ export class FeedbackController {
   create(@Body() createFeedbackDto: CreateFeedbackDto) {
     return this.feedbackService.create(createFeedbackDto);
   }
+  
+  @Post('/sendFeedback')
+  sendFeedback(@Body() createFeedbackDto: CreateFeedbackDto) {
+    return this.feedbackService.sendFeedback(createFeedbackDto);
+  }
 
   @Get()
   findAll() {

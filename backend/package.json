@@ -25,7 +25,9 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@slack/web-api": "^7.9.2",
     "bcrypt": "^6.0.0",
+    "openai": "^5.0.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
