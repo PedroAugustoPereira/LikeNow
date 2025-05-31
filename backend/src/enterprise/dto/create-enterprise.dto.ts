@@ -1,4 +1,4 @@
 export class CreateEnterpriseDto {
-    name        : String
-    adminUserId : String
+    name        : string
+    adminUserId : string
 }

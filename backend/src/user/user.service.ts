@@ -29,7 +29,7 @@ export class UserService {
     });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     return await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
@@ -45,7 +45,7 @@ export class UserService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     return await this.prisma.user.delete({
       where: { id },
     });

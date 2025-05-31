@@ -6,15 +6,24 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
 export class TeamService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createTeamDto: CreateTeamDto) {
-    if (!createTeamDto.leaderId) throw new Error('Leader ID is required');
+    const { name, leaderId, enterpriseId } = createTeamDto;
+
+    if (!leaderId) throw new Error('Leader ID is required');
     const leader = await this.prisma.user.findUnique({
-      where: { id: createTeamDto.leaderId },
+      where: { id: leaderId },
     });
     if (!leader) throw new Error('Leader not found');
-    return await this.prisma.team.create({ data: createTeamDto });
+
+    return await this.prisma.team.create({
+      data: {
+        name,
+        liderId: leaderId,        
+        enterpriseId,     
+      },
+    });
   }
 
   async findAll() {

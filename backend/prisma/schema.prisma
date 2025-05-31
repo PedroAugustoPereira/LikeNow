@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -36,7 +35,7 @@ model Team {
 }
 
 model Enterprise {
-  id          String  @id
+  id          String  @id @default(cuid())
   name        String
   adminUserId String
   teams       Team[]  @relation("EnterpriseTeams")

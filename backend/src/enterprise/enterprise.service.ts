@@ -8,15 +8,17 @@ export class EnterpriseService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createEnterpriseDto: CreateEnterpriseDto) {
-    return await this.prismaService.enterprise.create({data: createEnterpriseDto,})
-  }
+    return await this.prismaService.enterprise.create({
+      data: createEnterpriseDto,
+  });
+}
 
   async findAll() {
     return await this.prismaService.enterprise.findMany();
   }
 
   async findOne(id: string) {
-    return await this.prismaService.enterprise.findUnique({id: id});
+    return await this.prismaService.enterprise.findUnique({ where: { id: id } });
   }
 
   async update(id: string, updateEnterpriseDto: UpdateEnterpriseDto) {
