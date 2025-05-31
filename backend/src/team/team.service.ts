@@ -6,7 +6,7 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
 export class TeamService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(createTeamDto: CreateTeamDto) {
     const { name, leaderId, enterpriseId } = createTeamDto;
@@ -20,8 +20,8 @@ export class TeamService {
     return await this.prisma.team.create({
       data: {
         name,
-        liderId: leaderId,        
-        enterpriseId,     
+        leaderId: leaderId,
+        enterpriseId,
       },
     });
   }
