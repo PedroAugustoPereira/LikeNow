@@ -168,3 +168,30 @@
 
 - (DELETE) Apagar uma única empresa: [/:id]
   - `inserir id da empresa no url da requisição no lugar de <:id>`
+
+
+### Feedback
+
+- (GET) Listar todos os Feedbacks:  [/]
+  - Retorno da requisição: JSON com todos os Feedbacks
+  
+- (GET) Obter um único feedback: [/:id]
+  - `inserir id do feedback no url da requisição no lugar de <:id>`
+  - Retorno da requisição 
+      {
+        "senderUserId": string,
+        "receiverUserId": string,
+        "message": string
+      }
+
+- (POST) Enviar um Feedback: [/feedback/sendfeedback]
+  - senderUserId ausente = anonymous;
+  - Corpo da Requisição
+   {
+      "senderUserId": string (opcional),
+      "receiverUserId": string,
+      "message": string
+   }
+
+- (DELETE) Apagar um único Feedback: [/:id]
+  - `inserir id do Feedback no url da requisição no lugar de <:id>`
