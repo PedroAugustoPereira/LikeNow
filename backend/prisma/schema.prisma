@@ -30,7 +30,7 @@ model Team {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   users        User[]     @relation("TeamUsers")
-  liderId      String
+  leaderId      String
   enterprise   Enterprise @relation("EnterpriseTeams", fields: [enterpriseId], references: [id])
   enterpriseId String
 }

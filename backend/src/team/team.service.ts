@@ -1,26 +1,42 @@
+import { PrismaService } from 'src/prisma/prisma.service';
+
 import { Injectable } from '@nestjs/common';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
 export class TeamService {
-  create(createTeamDto: CreateTeamDto) {
-    return 'This action adds a new team';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createTeamDto: CreateTeamDto) {
+    if (!createTeamDto.leaderId) throw new Error('Leader ID is required');
+    const leader = await this.prisma.user.findUnique({
+      where: { id: createTeamDto.leaderId },
+    });
+    if (!leader) throw new Error('Leader not found');
+    return await this.prisma.team.create({ data: createTeamDto });
   }
 
-  findAll() {
-    return `This action returns all team`;
+  async findAll() {
+    return await this.prisma.team.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} team`;
+  async findOne(id: string) {
+    return await this.prisma.team.findUnique({
+      where: { id },
+    });
   }
 
-  update(id: number, updateTeamDto: UpdateTeamDto) {
-    return `This action updates a #${id} team`;
+  async update(id: string, updateTeamDto: UpdateTeamDto) {
+    return await this.prisma.team.update({
+      where: { id },
+      data: updateTeamDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} team`;
+  async remove(id: string) {
+    return await this.prisma.team.delete({
+      where: { id },
+    });
   }
 }
