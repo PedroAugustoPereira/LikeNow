@@ -3,12 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary: #01a982;
-  --secundary: #008567;
+  --primary: #ff6900;
+  --secundary: #f54a00;
 }
-
-  /* --primary: #ff6900; */
-  /* --secundary: #f54a00; */
 
 @theme inline {
   --color-background: var(--background);
