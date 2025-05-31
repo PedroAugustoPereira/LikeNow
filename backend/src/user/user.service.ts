@@ -33,14 +33,27 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
-    if (!user) throw new Error('User not found');
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
+  const user = await this.prisma.user.findUnique({
+    where: { id },
+    include: {
+      teams: {
+        select: {
+          id: true,
+        },
+        take: 1, // opcional, garante que só venha 1
+      },
+    },
+  });
+
+  if (!user) throw new Error('User not found');
+
+  const { password, teams, ...userWithoutPassword } = user;
+
+  return {
+    ...userWithoutPassword,
+    team_id: teams[0]?.id ?? null, // null caso não tenha team
+  };
+}
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.prisma.user.update({
