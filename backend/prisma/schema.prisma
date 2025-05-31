@@ -13,3 +13,40 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teams     Team[]   @relation("TeamUsers")
+  Feedback  Feedback[]
+}
+model Team {
+  id           String     @id @default(cuid())
+  name         String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  users        User[]     @relation("TeamUsers")
+  enterprise   Enterprise @relation("EnterpriseTeams", fields: [enterpriseId], references: [id])
+  enterpriseId String
+}
+
+model Enterprise {
+  id          String  @id
+  name        String
+  adminUserId String
+  teams       Team[]  @relation("EnterpriseTeams")
+}
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  Date      DateTime @default(now())
+}
+
+
+
+
