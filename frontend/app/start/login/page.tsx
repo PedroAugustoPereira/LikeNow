@@ -44,7 +44,7 @@ export default function LoginPage() {
       if (data.password != '1234') {
         router.push('/');
       } else {
-        router.push('/onboarding?userId=' + response.user_id);
+        router.push('/start/onboarding?userId=' + response.user_id);
       }
       
       // 4. Se "Lembrar de mim" estiver marcado, armazenar email (opcional)
@@ -77,7 +77,6 @@ export default function LoginPage() {
       }
       
       // Redirecionamento após login social
-      router.push('/dashboard');
     } catch (error) {
       console.error(`${provider} login failed:`, error);
       setLoginError(`Falha no login com ${provider}. Tente novamente.`);
