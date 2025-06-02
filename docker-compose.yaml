@@ -10,6 +10,13 @@ services:
       - "3010:3010"
     depends_on:
       - db
+  frontend:
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
   db: 
     image: postgres:latest
     container_name: postgres_db

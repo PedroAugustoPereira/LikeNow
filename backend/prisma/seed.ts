@@ -6,13 +6,20 @@ import * as bcrypt from 'bcrypt';
 
 async function main() {
   // 1. Criar User admin
-  const adminUser = await prisma.user.create({
-    data: {
-      email: 'admin@example.com',
-      password:  bcrypt.hashSync('admin123', 10),
-      name: 'Admin User',
+  let adminUser = await prisma.user.findUnique({
+    where: {
+      email: "admin@example.com",
     },
-  });
+  })
+  if(adminUser === null || adminUser === undefined) {
+    adminUser = await prisma.user.create({
+      data: {
+        email: 'admin@example.com',
+        password:  bcrypt.hashSync('admin123', 10),
+        name: 'Admin User',
+      },
+    });
+  } 
 
   // 2. Criar Enterprise com adminUserId
   const enterprise = await prisma.enterprise.create({
@@ -23,13 +30,20 @@ async function main() {
   });
 
   // 3. Criar outro usuário
-  const user = await prisma.user.create({
-    data: {
-      email: 'teste@gmail.com',
-      password:  bcrypt.hashSync('1234', 10),
-      name: 'Normal User',
+  let user = await prisma.user.findUnique({
+    where: {
+      email: "admin@example.com",
     },
-  });
+  })
+  if(user === null || user === undefined) {
+    user = await prisma.user.create({
+      data: {
+        email: 'teste@gmail.com',
+        password:  bcrypt.hashSync('1234', 10),
+        name: 'Normal User',
+      },
+    });
+  }
 
   // 4. Criar Team com admin e user
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
