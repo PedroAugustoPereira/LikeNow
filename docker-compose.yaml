@@ -1,6 +1,15 @@
-version: '1'
+version: '3'
 
 services:
+  backend:
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3010:3010"
+    depends_on:
+      - db
   db: 
     image: postgres:latest
     container_name: postgres_db
