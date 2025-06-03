@@ -191,6 +191,7 @@ export default function ReviewPage() {
 
       // Prepara os dados do feedback
       const feedbackData = {
+        senderUserId: "",
         receiverUserId,
         message: reviewText,
         ...(!isAnonymous && { senderUserId: userId })
